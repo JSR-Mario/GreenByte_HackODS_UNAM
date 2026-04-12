@@ -71,13 +71,20 @@ Período completo: 2015–2024 | Ventana analítica armonizada: 2019–2024
 
 ## Estructura del repositorio
 
-```
-GreenByte_HackODS/
-├── README.md                  ← Este archivo
+```text
+GreenByte_HackODS_UNAM/
+├── .gitignore                 ← Ignora archivos innecesarios
+├── .python-version            ← Versión de Python fijada
 ├── LICENSE                    ← CC BY-SA 4.0
+├── README.md                  ← Este archivo
 ├── ai-log.md                  ← Declaratoria de uso de IA (plantilla oficial HackODS)
+├── main.py                    ← Punto de entrada principal
+├── pyproject.toml             ← Configuración de dependencias (vía uv)
+├── uv.lock                    ← Versiones exactas y bloqueadas de las librerías
+├── dashboard/                 
+│   └── (tablero Quarto / visualizaciones finales)
 ├── datos/
-│   ├── datos_crudos/          ← CSVs exportados desde GEE (greenbyte_A/B1/B2/C_YYYY.csv)
+│   ├── datos_crudos/          ← Incluye el .zip de GEE (y los CSVs como greenbyte_A_2015.csv al descomprimirse)
 │   └── datos_procesados/      ← Dataset maestro consolidado y derivados
 │       ├── master_greenbyte_v4.csv
 │       ├── master_greenbyte_v4_2019_2024.csv
@@ -85,11 +92,10 @@ GreenByte_HackODS/
 │       ├── sst_descomposicion_enso.csv
 │       ├── tendencias_nacionales_v3.csv
 │       └── mann_kendall_tendencias_v3.csv
-├── scripts/
-│   ├── Extraccion_Variables_Ambientales_Mexico.ipynb  ← Extracción GEE v4
-│   └── Analisis_EDA.ipynb                             ← EDA v3
-└── dashboard/
-    └── (tablero Quarto / visualizaciones finales)
+├── notebook/                  ← Copias de respaldo o versiones anteriores de los notebooks
+└── scripts/
+    ├── Extraccion_Variables_Ambientales_Mexico.ipynb  ← Extracción GEE v4 principal
+    └── Analisis_EDA.ipynb                             ← Análisis principal EDA v3
 ```
 
 ---
@@ -98,13 +104,18 @@ GreenByte_HackODS/
 
 ### Requisitos
 - Cuenta de Google Earth Engine (proyecto: `greenbyte-hackods-unam-2026`)
-- Python 3.10+ con: `earthengine-api`, `geemap`, `pandas`, `numpy`, `matplotlib`, `statsmodels`, `scikit-learn`, `esda`, `libpysal`, `pymannkendall`, `seaborn`, `folium`
+- Python 3.10+ o preferentemente usar `uv` con el archivo `pyproject.toml` provisto.
+- Librerías: `earthengine-api`, `geemap`, `pandas`, `numpy`, `matplotlib`, `statsmodels`, `scikit-learn`, `esda`, `libpysal`, `pymannkendall`, `seaborn`, `folium`
+
+### Consideraciones previas para entorno local
+1. **Descomprimir Datos Crudos**: Para evitar la extracción pesada desde Earth Engine (que demora ~4 horas), dirígete a la carpeta `datos/datos_crudos/` y extrae el contenido del archivo `.zip` (`drive-download-...zip`) directamente en esa ruta. Esto habilitará todos los CSVs base.
+2. **Ajuste de Rutas (Google Drive)**: Los notebooks fueron desarrollados utilizando Google Colab, por lo que algunas de las variables de directorios referencian rutas absolutas de Google Drive (ej. `/content/drive/My Drive/...`). Antes de ejecutarlos de manera local, asegúrate de cambiar esas variables (como `PATH_DRIVE` o `PATH_MASTER`) por las rutas relativas correspondientes: `../datos/datos_crudos/` y `../datos/datos_procesados/`.
 
 ### Pasos
-1. Ejecutar `scripts/Extraccion_Variables_Ambientales_Mexico.ipynb` completo (lanza ~40 tareas en GEE, tiempo estimado ~4 horas en paralelo). Los CSVs exportados van a `datos/datos_crudos/`.
-2. Ejecutar la celda de consolidación para generar `master_greenbyte_v4.csv` en `datos/datos_procesados/`.
-3. Ejecutar `scripts/Analisis_EDA.ipynb` con la ventana 2019–2024 para el análisis principal.
-4. Las visualizaciones generadas van a `datos/datos_procesados/` y se integran al `dashboard/`.
+1. **(Opcional si usaste el .zip)** Ejecutar `scripts/Extraccion_Variables_Ambientales_Mexico.ipynb` completo para descargar desde cero los datos de GEE a `datos/datos_crudos/`.
+2. Ejecutar la celda de consolidación pertinente para generar el dataset principal `master_greenbyte_v4.csv` y guardarlo en `datos/datos_procesados/`.
+3. Ejecutar `scripts/Analisis_EDA.ipynb` (asegurando el uso de rutas locales) con la ventana temporal de 2019–2024 para el análisis multivariable y espacial.
+4. Las visualizaciones que generen los scripts se colocarán en `datos/datos_procesados/` listas para integrarse con el `dashboard/`.
 
 ---
 
