@@ -103,20 +103,49 @@ GreenByte_HackODS_UNAM/
 
 ## Cómo reproducir el pipeline
 
-### Requisitos
-- Cuenta de Google Earth Engine (proyecto: `greenbyte-hackods-unam-2026`)
-- Python 3.10+ o preferentemente usar `uv` con el archivo `pyproject.toml` provisto.
-- Librerías: `earthengine-api`, `geemap`, `pandas`, `numpy`, `matplotlib`, `statsmodels`, `scikit-learn`, `esda`, `libpysal`, `pymannkendall`, `seaborn`, `folium`
+### Requisitos y Configuración del Entorno Local
 
-### Consideraciones previas para entorno local
-1. **Descomprimir Datos Crudos**: Para evitar la extracción pesada desde Earth Engine (que demora ~4 horas), dirígete a la carpeta `datos/datos_crudos/` y extrae el contenido del archivo `.zip` (`drive-download-...zip`) directamente en esa ruta. Esto habilitará todos los CSVs base.
-2. **Ajuste de Rutas (Google Drive)**: Los notebooks fueron desarrollados utilizando Google Colab, por lo que algunas de las variables de directorios referencian rutas absolutas de Google Drive (ej. `/content/drive/My Drive/...`). Antes de ejecutarlos de manera local, asegúrate de cambiar esas variables (como `PATH_DRIVE` o `PATH_MASTER`) por las rutas relativas correspondientes: `../datos/datos_crudos/` y `../datos/datos_procesados/`.
+1. **Dependencias y Entorno Virtual (`uv`)**:
+   Este proyecto utiliza [`uv`](https://docs.astral.sh/uv/) para gestionar dependencias de forma rápida y reproducible (fijadas de forma rígida en `uv.lock`). En la raíz del repositorio, ejecuta:
+   ```bash
+   uv sync
+   ```
+   Esto creará automáticamente el entorno virtual instalando: `esda`, `folium`, `ipykernel`, `jupyter`, `libpysal`, `matplotlib`, `numpy`, `pandas`, `plotly`, `pymannkendall`, `scikit-learn`, `scipy`, `seaborn` y `statsmodels`.
+
+2. **Variables de Entorno (`.env`)**:
+   Crea un archivo `.env` en la raíz (está ignorado por git de forma segura) para definir ahí credenciales externas que no deban exponerse.
+   ```bash
+   GEE_PROJECT="greenbyte-hackods-unam-2026"
+   ```
+
+3. **Cuenta de Google Earth Engine**:
+   Necesaria si vas a correr procesos de extracción de Google Earth Engine explícitamente desde los notebooks para actualizar la data cruda.
+
+### Consideraciones previas
+1. **Descomprimir Datos Crudos**: Para evitar la extracción pesada desde Earth Engine (que demora ~4 horas), dirígete a la carpeta `datos/datos_crudos/` y extrae el contenido del archivo `.zip` directamente.
+2. **Ajuste de Rutas en los Notebooks**: Los notebooks originales asumen rutas estáticas de Google Colab (`/content/drive/MyDrive/...`). **Antes de ejecutarlos localmente, deberás cambiar estas variables** a las rutas relativas `../datos/datos_crudos/` y `../datos/datos_procesados/` directamente ("hardcodeadas") en el código.
 
 ### Pasos
-1. **(Opcional si usaste el .zip)** Ejecutar `scripts/Extraccion_Variables_Ambientales_Mexico.ipynb` completo para descargar desde cero los datos de GEE a `datos/datos_crudos/`.
-2. Ejecutar la celda de consolidación pertinente para generar el dataset principal `master_greenbyte_v4.csv` y guardarlo en `datos/datos_procesados/`.
-3. Ejecutar `scripts/Analisis_EDA.ipynb` (asegurando el uso de rutas locales) con la ventana temporal de 2019–2024 para el análisis multivariable y espacial.
-4. Las visualizaciones que generen los scripts se colocarán en `datos/datos_procesados/` listas para integrarse con el `dashboard/`.
+1. **[Opcional]** Ejecutar `scripts/Extraccion_Variables_Ambientales_Mexico.ipynb` completo para descargar desde cero los datos a `datos/datos_crudos/`.
+2. Ejecutar la celda de consolidación pertinente en las libretas para generar el dataset principal `master_greenbyte_v4.csv` y alojarlo centralizado en `datos/datos_procesados/`.
+3. Ejecutar `scripts/Analisis_EDA.ipynb` (asegurando el uso de rutas locales actualizadas) para la generación de gráficas estáticas.
+4. Las visualizaciones analíticas se colocarán en `datos/datos_procesados/` listas para enviarse al Dashboard.
+
+### Dashboard Interactivo (Quarto)
+El proyecto cuenta con un módulo de presentación de resultados impulsado por **Quarto Dashboards**, ubicado en la carpeta `dashboard/`. Mezcla análisis narrativo en Markdown con mapas funcionales gracias a la integración de JavaScript (Observable/Plotly/Leaflet).
+
+- **Cómo previsualizar visualmente el Dashboard**:
+  Si tienes [Quarto](https://quarto.org/docs/get-started/) instalado puedes lanzar el modo de desarrollo interactivo desde la terminal en la raíz del proyecto.
+  ```bash
+  quarto preview dashboard/index.qmd
+  ```
+  Esto levantará el panel en tu navegador. **¡Cualquier archivo o texto que edites dentro de `index.qmd` refrescará tu navegador instantáneamente en vivo!**
+
+- **Compilar el resultado final**:
+  Una vez estés satisfecho, empaqueta el contenido a HTML usando:
+  ```bash
+  quarto render dashboard/index.qmd
+  ```
 
 ---
 

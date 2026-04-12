@@ -5,9 +5,15 @@ __pycache__/
 .env
 .venv/
 
-# Jupyter
+# Jupyter y Quarto
 .ipynb_checkpoints/
 *.ipynb_meta
+.quarto/
+*_files/
+*_cache/
+.jupyter/
+out/
+_site/
 
 # Datos pesados (se generan localmente con el pipeline GEE)
 datos/datos_crudos/*.csv
@@ -29,3 +35,8 @@ credentials*.json
 
 # agent rules 
 *.agents
+
+# Instaladores y binarios
+*.deb
+*.exe
+*.msi
