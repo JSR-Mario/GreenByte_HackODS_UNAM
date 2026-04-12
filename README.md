@@ -77,6 +77,7 @@ GreenByte_HackODS_UNAM/
 ├── .python-version            ← Versión de Python fijada
 ├── LICENSE                    ← CC BY-SA 4.0
 ├── README.md                  ← Este archivo
+├── LICENSE                    ← CC BY-SA 4.0
 ├── ai-log.md                  ← Declaratoria de uso de IA (plantilla oficial HackODS)
 ├── main.py                    ← Punto de entrada principal
 ├── pyproject.toml             ← Configuración de dependencias (vía uv)
@@ -84,7 +85,7 @@ GreenByte_HackODS_UNAM/
 ├── dashboard/                 
 │   └── (tablero Quarto / visualizaciones finales)
 ├── datos/
-│   ├── datos_crudos/          ← Incluye el .zip de GEE (y los CSVs como greenbyte_A_2015.csv al descomprimirse)
+│   ├── datos_crudos/          ← .zip de GEE y CSVs exportados desde GEE (greenbyte_A/B1/B2/C_YYYY.csv)
 │   └── datos_procesados/      ← Dataset maestro consolidado y derivados
 │       ├── master_greenbyte_v4.csv
 │       ├── master_greenbyte_v4_2019_2024.csv
