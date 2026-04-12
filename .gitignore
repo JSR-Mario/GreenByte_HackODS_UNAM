@@ -26,3 +26,8 @@ Thumbs.db
 # Google Colab credentials
 token*.json
 credentials*.json
+
+# Temporales de Quarto
+dashboard/index.quarto_ipynb*
+dashboard/index_files/
+
