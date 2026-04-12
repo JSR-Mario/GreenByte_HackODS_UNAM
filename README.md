@@ -139,7 +139,7 @@ El proyecto cuenta con un módulo de presentación de resultados impulsado por *
   ```bash
   quarto preview dashboard/index.qmd
   ```
-  Esto levantará el panel en tu navegador. **¡Cualquier archivo o texto que edites dentro de `index.qmd` refrescará tu navegador instantáneamente en vivo!**
+  Esto levantará el panel en tu navegador. Los cambios se ven reflejados automaticamente.
 
 - **Compilar el resultado final**:
   Una vez estés satisfecho, empaqueta el contenido a HTML usando:
