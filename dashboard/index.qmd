@@ -379,8 +379,27 @@ donde el estrés no es un evento aislado, sino un fenómeno sistémico.
     document.head.appendChild(script)
   })
 
-  // ── 2. d3-dsv para parsear CSV (no depende del manifest de FileAttachment) ─
-  const dsv = await require("https://cdn.jsdelivr.net/npm/d3-dsv@3/dist/d3-dsv.umd.min.js")
+  // ── 2. Inline CSV parser (sin dependencias externas) ─────────────
+  const parseCSV = (text) => {
+    const lines = text.trim().split('\n')
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''))
+    return lines.slice(1).map(line => {
+      const vals = []; let cur = '', inQ = false
+      for (const c of line) {
+        if (c === '"') { inQ = !inQ }
+        else if (c === ',' && !inQ) { vals.push(cur); cur = '' }
+        else { cur += c }
+      }
+      vals.push(cur)
+      const obj = {}
+      headers.forEach((h, i) => {
+        const v = (vals[i] ?? '').trim()
+        const n = Number(v)
+        obj[h] = v === '' ? null : isNaN(n) ? v : n
+      })
+      return obj
+    })
+  }
 
   // ── 3. Contenedor ───────────────────────────────────────────────
   const div = document.createElement("div")
@@ -388,17 +407,17 @@ donde el estrés no es un evento aislado, sino un fenómeno sistémico.
   yield div
   await new Promise(r => setTimeout(r, 50))
 
-  // ── 4. Fetch directo del CSV (bypassa el manifest OJS de Quarto) ─────────
+  // ── 4. Fetch directo del CSV ──────────────────────────────────────
   let raw
   try {
     const resp = await fetch("resultados/master_greenbyte_v4_hotspots.csv")
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-    const text = await resp.text()
-    raw = dsv.csvParse(text, dsv.autoType)
+    raw = parseCSV(await resp.text())
   } catch(e) {
     div.innerHTML = `<div style="color:#f8fafc;padding:2rem;text-align:center;">Error cargando hotspots: ${e.message}</div>`
     return
   }
+
 
   if (!raw || raw.length === 0) {
     div.innerHTML = `<div style="color:#f8fafc;padding:2rem;text-align:center;">No se encontraron datos de hotspots.</div>`
