@@ -15,6 +15,13 @@ __pycache__/
 out/
 _site/
 
+# Artefactos de renderizado del README
+README.html
+README_files/
+
+# _freeze SÍ debe commitearse (estrategia freeze para CI)
+# NO agregar _freeze/ aquí
+
 # Datos pesados (se generan localmente con el pipeline GEE)
 datos/datos_crudos/*.csv
 datos/datos_procesados/master_greenbyte_v4.csv
@@ -33,7 +40,7 @@ Thumbs.db
 token*.json
 credentials*.json
 
-# agent rules 
+# agent rules
 *.agents
 
 # Instaladores y binarios
@@ -45,3 +52,8 @@ credentials*.json
 dashboard/index.quarto_ipynb*
 dashboard/index_files/
 
+# Entorno virtual
+.venv/
+
+
+/.quarto/
