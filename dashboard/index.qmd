@@ -362,133 +362,109 @@ donde el estrés no es un evento aislado, sino un fenómeno sistémico.
 ### {width=40%}
 
 
-```{ojs}
-//| echo: false
+```{=html}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<div id="hotspot-map" style="width:100%; height:600px; border-radius:12px; overflow:hidden; background:#0f172a;"></div>
+<script>
+(async () => {
+  // 1. Cargar Leaflet
+  await new Promise((resolve, reject) => {
+    if (window.L) return resolve();
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
 
-{
-  // ── 1. Leaflet ───────────────────────────────────────────────────
-  const L = await new Promise((resolve) => {
-    if (window.L) return resolve(window.L)
-    const link = document.createElement("link")
-    link.rel = "stylesheet"
-    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    document.head.appendChild(link)
-    const script = document.createElement("script")
-    script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    script.onload = () => resolve(window.L)
-    document.head.appendChild(script)
-  })
-
-  // ── 2. Inline CSV parser (sin dependencias externas) ─────────────
+  // 2. Parser CSV inline
   const parseCSV = (text) => {
-    const lines = text.trim().split('\n')
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''))
+    const lines = text.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
     return lines.slice(1).map(line => {
-      const vals = []; let cur = '', inQ = false
+      const vals = []; let cur = '', inQ = false;
       for (const c of line) {
-        if (c === '"') { inQ = !inQ }
-        else if (c === ',' && !inQ) { vals.push(cur); cur = '' }
-        else { cur += c }
+        if (c === '"') { inQ = !inQ; }
+        else if (c === ',' && !inQ) { vals.push(cur); cur = ''; }
+        else { cur += c; }
       }
-      vals.push(cur)
-      const obj = {}
+      vals.push(cur);
+      const obj = {};
       headers.forEach((h, i) => {
-        const v = (vals[i] ?? '').trim()
-        const n = Number(v)
-        obj[h] = v === '' ? null : isNaN(n) ? v : n
-      })
-      return obj
-    })
-  }
+        const v = (vals[i] || '').trim();
+        const n = Number(v);
+        obj[h] = v === '' ? null : isNaN(n) ? v : n;
+      });
+      return obj;
+    });
+  };
 
-  // ── 3. Contenedor ───────────────────────────────────────────────
-  const div = document.createElement("div")
-  div.style.cssText = "width:100%; height:600px; border-radius:12px; overflow:hidden;"
-  yield div
-  await new Promise(r => setTimeout(r, 50))
-
-  // ── 4. Fetch directo del CSV ──────────────────────────────────────
-  let raw
+  // 3. Fetch CSV
+  const div = document.getElementById('hotspot-map');
+  let raw;
   try {
-    const resp = await fetch("resultados/master_greenbyte_v4_hotspots.csv")
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-    raw = parseCSV(await resp.text())
+    const resp = await fetch('resultados/master_greenbyte_v4_hotspots.csv');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    raw = parseCSV(await resp.text());
   } catch(e) {
-    div.innerHTML = `<div style="color:#f8fafc;padding:2rem;text-align:center;">Error cargando hotspots: ${e.message}</div>`
-    return
+    div.innerHTML = '<div style="color:#f8fafc;padding:2rem;text-align:center;">Error: ' + e.message + '</div>';
+    return;
   }
-
-
   if (!raw || raw.length === 0) {
-    div.innerHTML = `<div style="color:#f8fafc;padding:2rem;text-align:center;">No se encontraron datos de hotspots.</div>`
-    return
+    div.innerHTML = '<div style="color:#f8fafc;padding:2rem;text-align:center;">Sin datos.</div>';
+    return;
   }
 
-  // ── 5. Mapa base ─────────────────────────────────────────────────
-  const map = L.map(div).setView([23.5, -102], 5)
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-    attribution: "© OpenStreetMap © CARTO",
-    subdomains: "abcd",
-    maxZoom: 19
-  }).addTo(map)
+  // 4. Mapa
+  const map = L.map(div).setView([23.5, -102], 5);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © CARTO', subdomains: 'abcd', maxZoom: 19
+  }).addTo(map);
 
-  // ── 6. Helpers ───────────────────────────────────────────────────
   const esHotspot = d => {
-    const v = d.hotspot_gi
-    return v === true || v === 1 ||
-           String(v).toLowerCase() === "true" || v === "1"
-  }
+    const v = d.hotspot_gi;
+    return v === true || v === 1 || String(v).toLowerCase() === 'true' || v === '1';
+  };
 
-  const vals = raw.map(d => +d.multi_stress).filter(v => isFinite(v)).sort((a, b) => a - b)
-  const p95  = vals[Math.floor(vals.length * 0.95)]
-  const df   = raw.filter(d => esHotspot(d) || +d.multi_stress > p95)
+  const ms = raw.map(d => +d.multi_stress).filter(v => isFinite(v)).sort((a, b) => a - b);
+  const p95 = ms[Math.floor(ms.length * 0.95)];
+  const df  = raw.filter(d => esHotspot(d) || +d.multi_stress > p95);
 
-  // ── 7. Puntos ────────────────────────────────────────────────────
-  let n = 0
+  let n = 0;
   for (const row of df) {
-    const lat = +row.latitude
-    const lon = +row.longitude
-    if (!isFinite(lat) || !isFinite(lon)) continue
-    const hot = esHotspot(row)
+    const lat = +row.latitude, lon = +row.longitude;
+    if (!isFinite(lat) || !isFinite(lon)) continue;
+    const hot = esHotspot(row);
     L.circleMarker([lat, lon], {
-      radius:      hot ? 7 : 4,
-      color:       hot ? "#ff6b6b" : "#e67e22",
-      fillColor:   hot ? "#c0392b" : "#e67e22",
-      fillOpacity: 0.85,
-      weight:      hot ? 1.5 : 0.8
-    })
-    .bindPopup(`
-        <b>${hot ? "⚠️ Hotspot Gi*" : "Estrés Aislado"}</b><br>
-        Multi-stress: ${isFinite(+row.multi_stress) ? (+row.multi_stress).toFixed(2) : "N/A"}<br>
-        Z-LST: ${isFinite(+row.z_LST) ? (+row.z_LST).toFixed(2) : "N/A"}<br>
-        Z-NO2: ${isFinite(+row.z_NO2) ? (+row.z_NO2).toFixed(2) : "N/A"}
-    `)
-    .addTo(map)
-    n++
+      radius: hot ? 7 : 4,
+      color:      hot ? '#ff6b6b' : '#e67e22',
+      fillColor:  hot ? '#c0392b' : '#e67e22',
+      fillOpacity: 0.85, weight: hot ? 1.5 : 0.8
+    }).bindPopup(
+      '<b>' + (hot ? '⚠️ Hotspot Gi*' : 'Estrés Aislado') + '</b><br>' +
+      'Multi-stress: ' + (isFinite(+row.multi_stress) ? (+row.multi_stress).toFixed(2) : 'N/A') + '<br>' +
+      'Z-LST: ' + (isFinite(+row.z_LST) ? (+row.z_LST).toFixed(2) : 'N/A') + '<br>' +
+      'Z-NO2: ' + (isFinite(+row.z_NO2) ? (+row.z_NO2).toFixed(2) : 'N/A')
+    ).addTo(map);
+    n++;
   }
 
-  // ── 8. Leyenda ───────────────────────────────────────────────────
-  const legend = L.control({ position: "bottomleft" })
+  // 5. Leyenda
+  const legend = L.control({ position: 'bottomleft' });
   legend.onAdd = () => {
-    const d = L.DomUtil.create("div")
-    d.style.cssText = `
-      background: rgba(15,23,42,0.9); color: #f8fafc;
-      padding: 10px 14px; border-radius: 8px;
-      border: 1px solid #475569; font-size: 13px; line-height: 1.8;
-    `
-    d.innerHTML = `
-      <b style="color:#22c55e">Simbología</b><br>
-      <span style="color:#c0392b">●</span> Hotspot Gi* (clúster)<br>
-      <span style="color:#e67e22">●</span> Estrés alto aislado<br>
-      <small style="color:#94a3b8">${n} puntos · p95 = ${p95.toFixed(2)}</small>
-    `
-    return d
-  }
-  legend.addTo(map)
-
-  setTimeout(() => map.invalidateSize(), 300)
-}
+    const d = L.DomUtil.create('div');
+    d.style.cssText = 'background:rgba(15,23,42,0.9);color:#f8fafc;padding:10px 14px;border-radius:8px;border:1px solid #475569;font-size:13px;line-height:1.8;';
+    d.innerHTML = '<b style="color:#22c55e">Simbología</b><br>' +
+      '<span style="color:#c0392b">●</span> Hotspot Gi* (clúster)<br>' +
+      '<span style="color:#e67e22">●</span> Estrés alto aislado<br>' +
+      '<small style="color:#94a3b8">' + n + ' puntos · p95 = ' + p95.toFixed(2) + '</small>';
+    return d;
+  };
+  legend.addTo(map);
+  setTimeout(() => map.invalidateSize(), 300);
+})();
+</script>
 ```
+
 
 
 ### {width=40%}
