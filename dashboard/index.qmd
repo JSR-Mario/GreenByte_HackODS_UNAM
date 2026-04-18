@@ -361,14 +361,12 @@ donde el estrés no es un evento aislado, sino un fenómeno sistémico.
 
 ### {width=40%}
 
+
 ```{ojs}
 //| echo: false
 
 {
-  // ── 1. Cargar datos ──────────────────────────────────────────────
-  const raw = await FileAttachment("resultados/master_greenbyte_v4_hotspots.csv").csv({ typed: true })
-
-  // ── 2. Leaflet ───────────────────────────────────────────────────
+  // ── 1. Leaflet ───────────────────────────────────────────────────
   const L = await new Promise((resolve) => {
     if (window.L) return resolve(window.L)
     const link = document.createElement("link")
@@ -381,11 +379,19 @@ donde el estrés no es un evento aislado, sino un fenómeno sistémico.
     document.head.appendChild(script)
   })
 
-  // ── 3. Contenedor ───────────────────────────────────────────────
+  // ── 2. Contenedor ───────────────────────────────────────────────
   const div = document.createElement("div")
   div.style.cssText = "width:100%; height:600px; border-radius:12px; overflow:hidden;"
   yield div
   await new Promise(r => setTimeout(r, 50))
+
+  // ── 3. Cargar datos (después del yield para evitar pérdida de contexto) ───
+  const raw = await FileAttachment("resultados/master_greenbyte_v4_hotspots.csv").csv({ typed: true })
+
+  if (!raw || raw.length === 0) {
+    div.innerHTML = `<div style="color:#f8fafc;padding:2rem;text-align:center;">No se pudo cargar el archivo de hotspots.</div>`
+    return
+  }
 
   // ── 4. Mapa base ─────────────────────────────────────────────────
   const map = L.map(div).setView([23.5, -102], 5)
@@ -406,13 +412,7 @@ donde el estrés no es un evento aislado, sino un fenómeno sistémico.
   const p95  = vals[Math.floor(vals.length * 0.95)]
   const df   = raw.filter(d => esHotspot(d) || +d.multi_stress > p95)
 
-  // ── 6. DEBUG rápido (borra después) ─────────────────────────────
-  console.log("Total filas:", raw.length)
-  console.log("Filas en df:", df.length)
-  console.log("Ejemplo fila 0:", raw[0])
-  console.log("p95:", p95)
-
-  // ── 7. Puntos ────────────────────────────────────────────────────
+  // ── 6. Puntos ────────────────────────────────────────────────────
   let n = 0
   for (const row of df) {
     const lat = +row.latitude
@@ -436,7 +436,7 @@ donde el estrés no es un evento aislado, sino un fenómeno sistémico.
     n++
   }
 
-  // ── 8. Leyenda ───────────────────────────────────────────────────
+  // ── 7. Leyenda ───────────────────────────────────────────────────
   const legend = L.control({ position: "bottomleft" })
   legend.onAdd = () => {
     const d = L.DomUtil.create("div")
@@ -458,6 +458,7 @@ donde el estrés no es un evento aislado, sino un fenómeno sistémico.
   setTimeout(() => map.invalidateSize(), 300)
 }
 ```
+
 
 ### {width=40%}
 
