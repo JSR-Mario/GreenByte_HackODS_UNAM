@@ -8,10 +8,11 @@ format:
     css: dashboard.css
     nav-buttons:
       - icon: github
-        href: https://github.com/
+        href: https://github.com/JSR-Mario/GreenByte_HackODS_UNAM
     logo: ""
     resources:
       - resultados/master_greenbyte_v4_hotspots.csv
+      - hero.svg
 
 execute:
   echo: false
