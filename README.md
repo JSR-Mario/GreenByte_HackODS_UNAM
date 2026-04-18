@@ -1,10 +1,14 @@
 # 🌱 GreenByte — HackODS UNAM 2026
 
-**ODS 13 · Acción por el Clima** | **ODS 14 · Vida Submarina** | **ODS 15 · Vida de Ecosistemas Terrestres**
+<!-- IMAGEN DEL PRODUCTO FINAL — reemplaza la línea de abajo con tu captura de pantalla -->
+![GreenByte Dashboard](dashboard/hero.svg)
 
-> Equipo: **GreenByte**  
-> Integrantes: Aldo Heraclio de la Isla · Mayra Cuellar Urbano · Juan Mario Sosa  
-> Hackatón: HackODS UNAM 2026 — primer hackatón de la UNAM para convertir datos abiertos en narrativas visuales sobre los ODS
+---
+
+![ODS 13](https://img.shields.io/badge/ODS%2013-Acci%C3%B3n%20por%20el%20Clima-4C9F38?style=flat-square) ![ODS 14](https://img.shields.io/badge/ODS%2014-Vida%20Submarina-0A97D9?style=flat-square) ![ODS 15](https://img.shields.io/badge/ODS%2015-Ecosistemas%20Terrestres-56C02B?style=flat-square) ![License](https://img.shields.io/badge/Licencia-CC%20BY--SA%204.0-lightgrey?style=flat-square)
+
+> **Equipo GreenByte** — Aldo Heraclio de la Isla · Mayra Cuellar Urbano · Juan Mario Sosa  
+> HackODS UNAM 2026 — primer hackatón de la UNAM para convertir datos abiertos en narrativas visuales sobre los ODS
 
 ---
 
@@ -75,14 +79,14 @@ Período completo: 2015–2024 | Ventana analítica armonizada: 2019–2024
 GreenByte_HackODS_UNAM/
 ├── .gitignore                 ← Ignora archivos innecesarios
 ├── .python-version            ← Versión de Python fijada
-├── LICENSE                    ← CC BY-SA 4.0
 ├── README.md                  ← Este archivo
 ├── LICENSE                    ← CC BY-SA 4.0
 ├── ai-log.md                  ← Declaratoria de uso de IA (plantilla oficial HackODS)
 ├── main.py                    ← Punto de entrada principal
 ├── pyproject.toml             ← Configuración de dependencias (vía uv)
 ├── uv.lock                    ← Versiones exactas y bloqueadas de las librerías
-├── dashboard/                 
+├── assets/                    ← Imágenes y recursos estáticos del README
+├── dashboard/
 │   └── (tablero Quarto / visualizaciones finales)
 ├── datos/
 │   ├── datos_crudos/          ← .zip de GEE y CSVs exportados desde GEE (greenbyte_A/B1/B2/C_YYYY.csv)
@@ -93,7 +97,6 @@ GreenByte_HackODS_UNAM/
 │       ├── sst_descomposicion_enso.csv
 │       ├── tendencias_nacionales_v3.csv
 │       └── mann_kendall_tendencias_v3.csv
-├── notebook/                  ← Copias de respaldo o versiones anteriores de los notebooks
 └── scripts/
     ├── Extraccion_Variables_Ambientales_Mexico.ipynb  ← Extracción GEE v4 principal
     └── Analisis_EDA.ipynb                             ← Análisis principal EDA v3
@@ -119,27 +122,30 @@ GreenByte_HackODS_UNAM/
    ```
 
 3. **Cuenta de Google Earth Engine**:
-   Necesaria si vas a correr procesos de extracción de Google Earth Engine explícitamente desde los notebooks para actualizar la data cruda.
+   Necesaria si vas a ejecutar los notebooks de extracción para actualizar la data cruda desde cero.
 
 ### Consideraciones previas
+
 1. **Descomprimir Datos Crudos**: Para evitar la extracción pesada desde Earth Engine (que demora ~4 horas), dirígete a la carpeta `datos/datos_crudos/` y extrae el contenido del archivo `.zip` directamente.
 2. **Ajuste de Rutas en los Notebooks**: Los notebooks originales asumen rutas estáticas de Google Colab (`/content/drive/MyDrive/...`). **Antes de ejecutarlos localmente, deberás cambiar estas variables** a las rutas relativas `../datos/datos_crudos/` y `../datos/datos_procesados/` directamente ("hardcodeadas") en el código.
 
 ### Pasos
+
 1. **[Opcional]** Ejecutar `scripts/Extraccion_Variables_Ambientales_Mexico.ipynb` completo para descargar desde cero los datos a `datos/datos_crudos/`.
 2. Ejecutar la celda de consolidación pertinente en las libretas para generar el dataset principal `master_greenbyte_v4.csv` y alojarlo centralizado en `datos/datos_procesados/`.
 3. Ejecutar `scripts/Analisis_EDA.ipynb` (asegurando el uso de rutas locales actualizadas) para la generación de gráficas estáticas.
 4. Las visualizaciones analíticas se colocarán en `datos/datos_procesados/` listas para enviarse al Dashboard.
 
 ### Dashboard Interactivo (Quarto)
+
 El proyecto cuenta con un módulo de presentación de resultados impulsado por **Quarto Dashboards**, ubicado en la carpeta `dashboard/`. Mezcla análisis narrativo en Markdown con mapas funcionales gracias a la integración de JavaScript (Observable/Plotly/Leaflet).
 
-- **Cómo previsualizar visualmente el Dashboard**:
-  Si tienes [Quarto](https://quarto.org/docs/get-started/) instalado puedes lanzar el modo de desarrollo interactivo desde la terminal en la raíz del proyecto.
+- **Previsualizar el Dashboard en modo desarrollo**:
+  Si tienes [Quarto](https://quarto.org/docs/get-started/) instalado, lanza el modo interactivo desde la raíz del proyecto:
   ```bash
   quarto preview dashboard/index.qmd
   ```
-  Esto levantará el panel en tu navegador. Los cambios se ven reflejados automaticamente.
+  Esto levantará el panel en tu navegador y los cambios se verán reflejados automáticamente.
 
 - **Compilar el resultado final**:
   Una vez estés satisfecho, empaqueta el contenido a HTML usando:
@@ -151,6 +157,6 @@ El proyecto cuenta con un módulo de presentación de resultados impulsado por *
 
 ## Licencia
 
-Este proyecto se distribuye bajo **CC BY-SA 4.0**. Ver archivo `LICENSE`.
+Este proyecto se distribuye bajo **CC BY-SA 4.0**. Ver archivo [`LICENSE`](LICENSE).
 
 Los datasets de terceros conservan sus licencias originales (ver tabla de metadatos arriba).
