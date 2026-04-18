@@ -379,21 +379,33 @@ donde el estrés no es un evento aislado, sino un fenómeno sistémico.
     document.head.appendChild(script)
   })
 
-  // ── 2. Contenedor ───────────────────────────────────────────────
+  // ── 2. d3-dsv para parsear CSV (no depende del manifest de FileAttachment) ─
+  const dsv = await require("https://cdn.jsdelivr.net/npm/d3-dsv@3/dist/d3-dsv.umd.min.js")
+
+  // ── 3. Contenedor ───────────────────────────────────────────────
   const div = document.createElement("div")
   div.style.cssText = "width:100%; height:600px; border-radius:12px; overflow:hidden;"
   yield div
   await new Promise(r => setTimeout(r, 50))
 
-  // ── 3. Cargar datos (después del yield para evitar pérdida de contexto) ───
-  const raw = await FileAttachment("resultados/master_greenbyte_v4_hotspots.csv").csv({ typed: true })
-
-  if (!raw || raw.length === 0) {
-    div.innerHTML = `<div style="color:#f8fafc;padding:2rem;text-align:center;">No se pudo cargar el archivo de hotspots.</div>`
+  // ── 4. Fetch directo del CSV (bypassa el manifest OJS de Quarto) ─────────
+  let raw
+  try {
+    const resp = await fetch("resultados/master_greenbyte_v4_hotspots.csv")
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+    const text = await resp.text()
+    raw = dsv.csvParse(text, dsv.autoType)
+  } catch(e) {
+    div.innerHTML = `<div style="color:#f8fafc;padding:2rem;text-align:center;">Error cargando hotspots: ${e.message}</div>`
     return
   }
 
-  // ── 4. Mapa base ─────────────────────────────────────────────────
+  if (!raw || raw.length === 0) {
+    div.innerHTML = `<div style="color:#f8fafc;padding:2rem;text-align:center;">No se encontraron datos de hotspots.</div>`
+    return
+  }
+
+  // ── 5. Mapa base ─────────────────────────────────────────────────
   const map = L.map(div).setView([23.5, -102], 5)
   L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
     attribution: "© OpenStreetMap © CARTO",
@@ -401,7 +413,7 @@ donde el estrés no es un evento aislado, sino un fenómeno sistémico.
     maxZoom: 19
   }).addTo(map)
 
-  // ── 5. Helpers ───────────────────────────────────────────────────
+  // ── 6. Helpers ───────────────────────────────────────────────────
   const esHotspot = d => {
     const v = d.hotspot_gi
     return v === true || v === 1 ||
@@ -412,7 +424,7 @@ donde el estrés no es un evento aislado, sino un fenómeno sistémico.
   const p95  = vals[Math.floor(vals.length * 0.95)]
   const df   = raw.filter(d => esHotspot(d) || +d.multi_stress > p95)
 
-  // ── 6. Puntos ────────────────────────────────────────────────────
+  // ── 7. Puntos ────────────────────────────────────────────────────
   let n = 0
   for (const row of df) {
     const lat = +row.latitude
@@ -436,7 +448,7 @@ donde el estrés no es un evento aislado, sino un fenómeno sistémico.
     n++
   }
 
-  // ── 7. Leyenda ───────────────────────────────────────────────────
+  // ── 8. Leyenda ───────────────────────────────────────────────────
   const legend = L.control({ position: "bottomleft" })
   legend.onAdd = () => {
     const d = L.DomUtil.create("div")
